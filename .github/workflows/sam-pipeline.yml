@@ -1,3 +1,5 @@
+---
+name: build-deploy-production
 on:
   push:
     branches:
@@ -13,11 +15,22 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-west-2
-      # sam build 
+          aws-region: ${{ secrets.REGION }}
+      # sam build
       - run: sam build -pu
 
-# Run Unit tests- Specify unit tests here 
+      # Run Unit tests- Specify unit tests here
 
-# sam deploy
-      - run: sam deploy --no-confirm-changeset --no-fail-on-empty-changeset --stack-name sam-hello-world --s3-bucket github-actions-with-aws-sam --capabilities CAPABILITY_IAM --region us-west-2
+      # sam deploy
+      - shell: bash
+        env:
+          REGION: ${{ secrets.REGION }}
+          S3_BUCKET: ${{ secrets.S3_BUCKET }}
+        run: |
+          sam deploy \
+            --no-confirm-changeset \
+            --no-fail-on-empty-changeset \
+            --stack-name sam-hello-world \
+            --capabilities CAPABILITY_IAM \
+            --s3-bucket "$S3_BUCKET" \
+            --region "$REGION"
